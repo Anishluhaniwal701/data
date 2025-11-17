@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* Container animation */
+.card {
+  background: rgb(255, 255, 255);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  transform-style: preserve-3d;
+  transition: transform 0.8s ease, opacity 0.8s ease;
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+.card.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Button hover animation */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* Smooth fade in/out for forms */
+.hidden {
+  display: none;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.fade-in {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.5s ease;
+}
+</style>
+</head>
+<body class="bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 min-h-screen flex items-center justify-center p-4">
+
+<div class="w-full max-w-md">
+  
+  <!-- LOGIN BOX -->
+  <div id="loginBox" class="card show">
+    <h2 class="text-3xl font-bold text-center mb-6 text-indigo-700 animate-pulse">Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email" class="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+    <input type="password" id="loginPassword" placeholder="Password" class="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+    <button onclick="loginUser()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:from-purple-600 hover:to-indigo-600">Login</button>
+    <div class="flex justify-between mt-4 text-sm text-indigo-700">
+      <button onclick="showRegister()" class="hover:underline">Create Account</button>
+      <button onclick="showForgot()" class="hover:underline">Forgot Password?</button>
+    </div>
+  </div>
+
+  <!-- REGISTER BOX -->
+  <div id="registerBox" class="card hidden">
+    <h2 class="text-3xl font-bold text-center mb-6 text-purple-700 animate-pulse">Register</h2>
+    <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400">
+    <input type="password" id="regPassword" placeholder="Password" class="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400">
+    <button onclick="registerUser()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:from-pink-600 hover:to-purple-600">Register</button>
+    <button onclick="back()" class="w-full mt-4 text-purple-600 hover:underline">Back</button>
+  </div>
+
+  <!-- FORGOT PASSWORD BOX -->
+  <div id="forgotBox" class="card hidden">
+    <h2 class="text-3xl font-bold text-center mb-6 text-pink-700 animate-pulse">Recover Password</h2>
+    <input type="email" id="forgotEmail" placeholder="Email" class="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-400">
+    <button onclick="forgotPassword()" class="w-full bg-gradient-to-r from-pink-600 to-red-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:from-red-600 hover:to-pink-600">Get Password</button>
+    <button onclick="back()" class="w-full mt-4 text-pink-600 hover:underline">Back</button>
+  </div>
+
+</div>
+
+<script>
+const apiURL = "https://script.google.com/macros/s/AKfycbw3v_qiWprSbKjIwnSeMoQAPppxXbtCWeWfhL_OOvdRAcC24sMSHuOoT5VNmqhcge5P/exec";
+
+// Show Register Form
+function showRegister(){
+  hideAll();
+  const box = document.getElementById("registerBox");
+  box.classList.remove("hidden");
+  setTimeout(()=>box.classList.add("show"), 50);
+}
+
+// Show Forgot Password Form
+function showForgot(){
+  hideAll();
+  const box = document.getElementById("forgotBox");
+  box.classList.remove("hidden");
+  setTimeout(()=>box.classList.add("show"), 50);
+}
+
+// Back to Login
+function back(){
+  hideAll();
+  const box = document.getElementById("loginBox");
+  box.classList.remove("hidden");
+  setTimeout(()=>box.classList.add("show"), 50);
+}
+
+// Hide All Forms
+function hideAll(){
+  document.querySelectorAll(".card").forEach(b=>{
+    b.classList.add("hidden");
+    b.classList.remove("show");
+  });
+}
+
+// Register User
+async function registerUser(){
+  let email = document.getElementById("regEmail").value;
+  let password = document.getElementById("regPassword").value;
+  await fetch(apiURL,{ method:"POST", body:JSON.stringify({action:"register",email,password}) });
+  alert("Registered Successfully!");
+  back();
+}
+
+// Login User
+async function loginUser(){
+  let email = document.getElementById("loginEmail").value;
+  let password = document.getElementById("loginPassword").value;
+  let res = await fetch(apiURL,{ method:"POST", body:JSON.stringify({action:"login",email,password}) });
+  let text = await res.text();
+  if (text === "SUCCESS") {
+    alert("Login Successful!");
+    window.location.href = "dashboard.html";
+  } else alert("Invalid Email/Password");
+}
+
+// Forgot Password
+async function forgotPassword(){
+  let email = document.getElementById("forgotEmail").value;
+  let res = await fetch(apiURL,{ method:"POST", body:JSON.stringify({action:"forgot",email}) });
+  let text = await res.text();
+  if(text === "NOT_FOUND") alert("Email not found");
+  else alert("Your Password: "+text);
+}
+</script>
+
+</body>
+</html>
