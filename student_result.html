@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Result Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  padding: 20px;
+}
+.card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 16px;
+  padding: 25px;
+  max-width: 700px;
+  margin: 0 auto;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  transform: translateY(-20px);
+  opacity: 0;
+  animation: fadeInUp 0.8s forwards;
+}
+@keyframes fadeInUp {
+  to { transform: translateY(0); opacity: 1; }
+}
+.table-row:hover { background: rgba(103, 80, 164, 0.1); transition: 0.3s; }
+.total-row { font-weight: bold; background: rgba(103, 80, 164, 0.1); }
+</style>
+</head>
+<body>
+
+<h1 class="text-3xl font-bold text-center text-white mb-6 animate-pulse">📚 Student Result Portal</h1>
+
+<div class="card">
+  <input type="text" id="searchValue" placeholder="Enter Roll No or Name" class="w-full p-3 border rounded mb-4 focus:ring-2 focus:ring-indigo-500">
+  <button onclick="getResult()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold mb-6 transition">Show Result</button>
+
+  <div id="resultBox" class="hidden">
+    <h2 class="text-2xl font-bold mb-4 text-indigo-700 text-center" id="r_name_roll"></h2>
+    <div id="statusBox" class="text-center mb-4 text-xl font-semibold"></div>
+    <table class="w-full border-collapse border border-gray-200" id="resultTable">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-2 border">Subject</th>
+          <th class="p-2 border">Internal</th>
+          <th class="p-2 border">Theory</th>
+          <th class="p-2 border">Total</th>
+          <th class="p-2 border">Grade</th>
+        </tr>
+      </thead>
+      <tbody id="subjectTable"></tbody>
+      <tfoot id="totalFooter"></tfoot>
+    </table>
+  </div>
+</div>
+
+<script>
+// Demo localStorage data
+let allData = JSON.parse(localStorage.getItem("studentData")) || [];
+
+// Grade function
+function getGrade(total) {
+  if(total>=90) return "A+";
+  else if(total>=80) return "A";
+  else if(total>=70) return "B+";
+  else if(total>=60) return "B";
+  else if(total>=50) return "C";
+  else if(total>=33) return "D";
+  else return "F";
+}
+
+function getResult() {
+  const value = document.getElementById("searchValue").value.trim().toLowerCase();
+  if(!value) { alert("Enter Roll No or Name"); return; }
+
+  const studentRecords = allData.filter(s => s.roll.toLowerCase() === value || s.name.toLowerCase() === value);
+  if(studentRecords.length === 0) { alert("No record found!"); return; }
+
+  document.getElementById("r_name_roll").innerText = studentRecords[0].name + " - " + studentRecords[0].roll;
+
+  let subjectRows = "";
+  let totalMarks = 0;
+  let failSubjects = [];
+
+  studentRecords.forEach(r=>{
+    subjectRows += `<tr class="table-row">
+      <td class="p-2 border">${r.subject}</td>
+      <td class="p-2 border">${r.internal}</td>
+      <td class="p-2 border">${r.theory}</td>
+      <td class="p-2 border">${r.total}</td>
+      <td class="p-2 border">${getGrade(r.total)}</td>
+    </tr>`;
+    totalMarks += r.total;
+    if(r.total < 33) failSubjects.push(r.subject);
+  });
+
+  document.getElementById("subjectTable").innerHTML = subjectRows;
+  
+  let statusText = "";
+  let totalFooterHTML = "";
+  
+  if(failSubjects.length===0){
+    // Pass
+    let totalSubjects = studentRecords.length;
+    let percentage = ((totalMarks / (totalSubjects*100))*100).toFixed(2)+"%";
+    let cgpa = (percentage.replace("%","")/9.5).toFixed(2);
+    statusText = `<span class="text-green-600">Status: PASS ✅</span>`;
+    totalFooterHTML = `<tr class="total-row">
+      <td colspan="3" class="p-2 border text-right">All Subjects Total:</td>
+      <td class="p-2 border">${totalMarks}</td>
+      <td class="p-2 border"></td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="3" class="p-2 border text-right">Percentage:</td>
+      <td class="p-2 border">${percentage}</td>
+      <td class="p-2 border"></td>
+    </tr>
+    <tr class="total-row">
+      <td colspan="3" class="p-2 border text-right">CGPA:</td>
+      <td class="p-2 border">${cgpa}</td>
+      <td class="p-2 border"></td>
+    </tr>`;
+  }
+  else if(failSubjects.length==1){
+    // Reappear
+    statusText = `<span class="text-yellow-600">Status: REAPPEAR ⚠️ (Subject: ${failSubjects.join(", ")})</span>`;
+    totalFooterHTML = "";
+  }
+  else{
+    // Fail
+    statusText = `<span class="text-red-600">Status: FAIL ❌</span>`;
+    totalFooterHTML = "";
+  }
+
+  document.getElementById("statusBox").innerHTML = statusText;
+  document.getElementById("totalFooter").innerHTML = totalFooterHTML;
+  document.getElementById("resultBox").classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>

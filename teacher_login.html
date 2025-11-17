@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .login-card {
+    background: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    transform: translateY(-50px);
+    opacity: 0;
+    animation: fadeInUp 0.8s forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+
+<body>
+
+<div class="login-card">
+  <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">👩‍🏫 Teacher Login</h2>
+
+  <form onsubmit="return teacherAuth(event)" class="space-y-4">
+    <input type="text" id="tid" placeholder="Teacher ID"
+      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition">
+    <input type="password" id="tpass" placeholder="Password"
+      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition">
+    <button type="submit"
+      class="w-full p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform">
+      Login
+    </button>
+  </form>
+</div>
+
+<script>
+function teacherAuth(e) {
+    e.preventDefault();
+
+    let id = document.getElementById("tid").value;
+    let pass = document.getElementById("tpass").value;
+
+    // UNIQUE TEACHER ID (FIXED)
+    let correctID = "teacher001";
+    let correctPASS = "admin123";
+
+    if (id === correctID && pass === correctPASS) {
+        alert("Login Successful!");
+        window.location.href = "teacher-dashboard.html"; // next page
+    } else {
+        alert("Invalid ID or Password!");
+    }
+}
+</script>
+
+</body>
+</html>

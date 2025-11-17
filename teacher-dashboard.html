@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard - Multi Subject Total</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+.card {
+  background: rgba(241, 238, 238, 0.95);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  transform: translateY(-20px);
+  opacity: 0;
+  animation: fadeInUp 0.8s forwards;
+}
+@keyframes fadeInUp {
+  to { transform: translateY(0); opacity: 1; }
+}
+button { transition: all 0.3s ease; }
+button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+tr:hover { background: rgba(103, 80, 164, 0.1); transition: 0.3s; }
+.total-row { background: rgba(103, 80, 164, 0.1); font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1 class="text-4xl font-bold text-center text-white mb-4 animate-pulse">👩‍🏫 Teacher Dashboard</h1>
+
+<div class="text-right mb-4">
+  <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700">Logout</button>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+  <!-- Form Section -->
+  <div class="card">
+    <h2 class="text-2xl font-semibold mb-6 text-indigo-700">Add Student Result (Multiple Subjects)</h2>
+    
+    <input id="name" type="text" placeholder="Student Name" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 mb-3" required>
+    <input id="roll" type="text" placeholder="Roll No" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 mb-3" required>
+
+    <div id="subjectsContainer">
+      <div class="subject-row space-y-2 mb-2">
+        <input type="text" placeholder="Subject Name" class="subjectName w-full p-2 border rounded" required>
+        <input type="number" placeholder="Internal Marks" class="internalMarks w-full p-2 border rounded" required>
+        <input type="number" placeholder="Theory Marks" class="theoryMarks w-full p-2 border rounded" required>
+      </div>
+    </div>
+
+    <button type="button" onclick="addSubjectRow()" class="w-full bg-green-500 text-white py-2 rounded-lg mb-2">+ Add Another Subject</button>
+    <button type="button" onclick="saveStudent()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold shadow-lg hover:scale-105 transition-transform">Save All Subjects</button>
+  </div>
+
+  <!-- Table Section -->
+  <div class="card">
+    <h2 class="text-2xl font-semibold mb-4 text-indigo-700">Saved Student Data</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse border border-gray-200">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-3 border">Name</th>
+            <th class="p-3 border">Roll</th>
+            <th class="p-3 border">Subject</th>
+            <th class="p-3 border">Internal</th>
+            <th class="p-3 border">Theory</th>
+            <th class="p-3 border">Total</th>
+            <th class="p-3 border">Action</th>
+          </tr>
+        </thead>
+        <tbody id="dataTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWh9xOEM2wFLfQDjUa3Ge0mwysnY6KRLSY754TWrmqw2yaPrzItpEBMPL1GQr_FOu0/exec";
+
+let allData = [];
+
+// Load data from localStorage
+window.onload = function () {
+  let saved = localStorage.getItem("studentData");
+  if (saved) {
+    allData = JSON.parse(saved);
+    renderTable();
+  }
+};
+
+// Logout function
+function logout() {
+  alert("You have been logged out!");
+  window.location.href = "dashboard.html"; // replace with your login page
+}
+
+// Add another subject row
+function addSubjectRow() {
+  let container = document.getElementById("subjectsContainer");
+  let div = document.createElement("div");
+  div.classList.add("subject-row", "space-y-2", "mb-2");
+  div.innerHTML = `
+    <input type="text" placeholder="Subject Name" class="subjectName w-full p-2 border rounded" required>
+    <input type="number" placeholder="Internal Marks" class="internalMarks w-full p-2 border rounded" required>
+    <input type="number" placeholder="Theory Marks" class="theoryMarks w-full p-2 border rounded" required>
+  `;
+  container.appendChild(div);
+}
+
+// Save all subjects for a student
+function saveStudent() {
+  let studentName = document.getElementById("name").value;
+  let roll = document.getElementById("roll").value;
+
+  let subjects = [];
+  document.querySelectorAll(".subject-row").forEach(row => {
+    let subject = row.querySelector(".subjectName").value;
+    let internal = parseInt(row.querySelector(".internalMarks").value);
+    let theory = parseInt(row.querySelector(".theoryMarks").value);
+    subjects.push({ subject, internal, theory, total: internal + theory });
+  });
+
+  let aggregate = subjects.reduce((sum, s) => sum + s.total, 0);
+
+  subjects.forEach(sub => {
+    let entry = { name: studentName, roll, subject: sub.subject, internal: sub.internal, theory: sub.theory, total: sub.total, aggregate };
+    allData.push(entry);
+
+    // Send to Google Sheet
+    fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", body: JSON.stringify(entry) });
+  });
+
+  localStorage.setItem("studentData", JSON.stringify(allData));
+  alert("All Subjects Saved Successfully!");
+  renderTable();
+
+  document.getElementById("name").value = "";
+  document.getElementById("roll").value = "";
+  document.getElementById("subjectsContainer").innerHTML = `
+    <div class="subject-row space-y-2 mb-2">
+      <input type="text" placeholder="Subject Name" class="subjectName w-full p-2 border rounded" required>
+      <input type="number" placeholder="Internal Marks" class="internalMarks w-full p-2 border rounded" required>
+      <input type="number" placeholder="Theory Marks" class="theoryMarks w-full p-2 border rounded" required>
+    </div>
+  `;
+}
+
+// Render table with aggregate total
+function renderTable() {
+  let table = "";
+  let grouped = {};
+
+  allData.forEach(row => {
+    let key = row.name + "-" + row.roll;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(row);
+  });
+
+  for (let student in grouped) {
+    let rows = grouped[student];
+    let aggregate = rows[0].aggregate;
+    rows.forEach(r => {
+      table += `
+        <tr class="transition duration-300">
+          <td class="p-3 border">${r.name}</td>
+          <td class="p-3 border">${r.roll}</td>
+          <td class="p-3 border">${r.subject}</td>
+          <td class="p-3 border">${r.internal}</td>
+          <td class="p-3 border">${r.theory}</td>
+          <td class="p-3 border">${r.total}</td>
+          <td class="p-3 border">
+            <button onclick="deleteRow('${student}')" class="text-red-600 font-semibold hover:underline">Delete</button>
+          </td>
+        </tr>
+      `;
+    });
+    table += `
+      <tr class="total-row">
+        <td colspan="5" class="p-3 border text-right">Aggregate Total:</td>
+        <td class="p-3 border">${aggregate}</td>
+        <td class="p-3 border"></td>
+      </tr>
+    `;
+  }
+
+  document.getElementById("dataTable").innerHTML = table;
+}
+
+// Delete all subjects of a student (local + Google Sheet)
+async function deleteRow(studentKey) {
+  if (!confirm("Are you sure you want to delete this student's records?")) return;
+
+  let studentRows = allData.filter(r => (r.name + "-" + r.roll) === studentKey);
+  
+  // Delete from Google Sheet
+  for(let r of studentRows){
+    await fetch(SCRIPT_URL + "?delete=" + encodeURIComponent(r.roll));
+  }
+
+  // Delete from localStorage
+  allData = allData.filter(r => (r.name + "-" + r.roll) !== studentKey);
+  localStorage.setItem("studentData", JSON.stringify(allData));
+  renderTable();
+  alert("Student Records Deleted Successfully!");
+}
+// Save all subjects for a student
+function saveStudent() {
+  let studentName = document.getElementById("name").value.trim();
+  let roll = document.getElementById("roll").value.trim();
+
+  if(studentName === "" || roll === ""){
+    alert("Student Name और Roll No खाली नहीं हो सकते!");
+    return;
+  }
+
+  let subjects = [];
+  let valid = true;
+
+  document.querySelectorAll(".subject-row").forEach((row, index) => {
+    let subject = row.querySelector(".subjectName").value.trim();
+    let internal = parseInt(row.querySelector(".internalMarks").value);
+    let theory = parseInt(row.querySelector(".theoryMarks").value);
+
+    if(subject === ""){
+      alert(`Subject name #${index + 1} खाली नहीं हो सकता!`);
+      valid = false;
+      return;
+    }
+
+    if(isNaN(internal) || internal < 0 || internal > 20){
+      alert(`Internal Marks for "${subject}" should be 0-20`);
+      valid = false;
+      return;
+    }
+
+    if(isNaN(theory) || theory < 0 || theory > 80){
+      alert(`Theory Marks for "${subject}" should be 0-80`);
+      valid = false;
+      return;
+    }
+
+    subjects.push({ subject, internal, theory, total: internal + theory });
+  });
+
+  if(!valid) return; // stop if validation fails
+
+  let aggregate = subjects.reduce((sum, s) => sum + s.total, 0);
+
+  subjects.forEach(sub => {
+    let entry = { name: studentName, roll, subject: sub.subject, internal: sub.internal, theory: sub.theory, total: sub.total, aggregate };
+    allData.push(entry);
+
+    // Send to Google Sheet
+    fetch(SCRIPT_URL, { method:"POST", mode:"no-cors", body: JSON.stringify(entry) });
+  });
+
+  localStorage.setItem("studentData", JSON.stringify(allData));
+  alert("All Subjects Saved Successfully!");
+  renderTable();
+
+  // Reset form
+  document.getElementById("name").value = "";
+  document.getElementById("roll").value = "";
+  document.getElementById("subjectsContainer").innerHTML = `
+    <div class="subject-row space-y-2 mb-2">
+      <input type="text" placeholder="Subject Name" class="subjectName w-full p-2 border rounded" required>
+      <input type="number" placeholder="Internal Marks" class="internalMarks w-full p-2 border rounded" required>
+      <input type="number" placeholder="Theory Marks" class="theoryMarks w-full p-2 border rounded" required>
+    </div>
+  `;
+}
+
+</script>
+
+</body>
+</html>

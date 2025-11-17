@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #c3ecf7, #d3c0f9, #fbc3c3);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+  }
+
+  @keyframes gradientBG {
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+  }
+
+  .navbar {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+  }
+
+  .nav-buttons button {
+    transition: all 0.3s;
+  }
+
+  .nav-buttons button:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  }
+
+  .content-box {
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    padding: 40px;
+    max-width: 500px;
+    text-align: center;
+    margin: 60px auto;
+    transform: translateY(-20px);
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  img {
+    transition: transform 0.6s ease, box-shadow 0.6s ease;
+  }
+
+  img:hover {
+    transform: scale(1.05) rotate(-2deg);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+  }
+
+  h2 {
+    animation: slideDown 0.8s ease forwards;
+  }
+
+  @keyframes slideDown {
+    0% { transform: translateY(-30px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+</style>
+</head>
+<body class="relative">
+
+<!-- NAVBAR -->
+<div class="navbar fixed top-0 w-full flex justify-between items-center px-8 h-24 shadow-md z-50">
+  <div class="text-3xl font-bold text-indigo-700 animate-pulse">📚 Student Management System</div>
+  <div class="nav-buttons space-x-4">
+    <button onclick="teacherLogin()" class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-medium shadow-lg hover:from-indigo-700 hover:to-indigo-500">Teacher Login</button>
+    <button onclick="studentLogin()" class="px-5 py-2 rounded-xl bg-green-600 text-white font-medium shadow-lg hover:from-green-700 hover:to-green-500">Student Login</button>
+    <button onclick="logout()" class="px-5 py-2 rounded-xl bg-red-600 text-white font-medium shadow-lg hover:from-red-700 hover:to-red-500">Logout</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content mt-32 px-4">
+  <div class="content-box">
+    <h2 class="text-3xl font-bold mb-6 text-indigo-700">Welcome to Dashboard</h2>
+    <p class="text-gray-700 mb-8 text-lg">Access student results, attendance, marks, and all academic details in one place. Manage your classroom efficiently and keep track of student progress.</p>
+    <img src="book.webp" alt="Study Illustration" class="rounded-xl mx-auto shadow-lg">
+  </div>
+</div>
+
+<script>
+function teacherLogin() {
+    window.location.href = "teacher_login.html";
+}
+
+function studentLogin() {
+    window.location.href = "student_result.html";
+}
+
+function logout() {
+    alert("You have been logged out!");
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
